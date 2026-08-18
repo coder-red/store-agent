@@ -2,7 +2,7 @@
 import os
 os.environ.setdefault("DEMO_MODE", "true")
 os.environ.setdefault("LLM_PROVIDER", "groq")
-os.environ.setdefault("LLM_MODEL", "llama-3.3-70b-versatile")
+os.environ.setdefault("LLM_MODEL", "openai/gpt-oss-120b")
 os.environ.setdefault("CHANNEL", "webchat")
 os.environ.setdefault("STORE_NAME", "Demo Store")
 

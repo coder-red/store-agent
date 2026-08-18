@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     groq_api_key: Optional[str] = None
     groq_base_url: str = "https://api.groq.com/openai/v1"
     llm_provider: str = "groq"
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-120b"
 
     supabase_url: str = ""
     supabase_key: str = ""

@@ -1,5 +1,5 @@
 from langchain_core.tools import tool
-from app.shopify.service import get_shopify_provider
+from app.commerce.service import get_store_provider
 from app.agents.knowledge_base import query_knowledge_base as _kb_search
 from app.config import settings
 from datetime import datetime, timezone
@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 @tool
 async def get_order_status(order_number: str = "", customer_email: str = "") -> str:
     """Fetch the current status, fulfillment info, and tracking details for an order. Provide either order_number or customer_email."""
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     order = None
     if order_number:
         order = await provider.get_order_by_number(order_number)
@@ -31,7 +31,7 @@ async def get_order_status(order_number: str = "", customer_email: str = "") -> 
 @tool
 async def check_return_eligibility(order_number: str) -> str:
     """Check whether an order is within the return window and eligible for a return."""
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     order = await provider.get_order_by_number(order_number)
     if not order:
         return f"No order found with number {order_number}."
@@ -48,7 +48,7 @@ async def check_return_eligibility(order_number: str) -> str:
 @tool
 async def get_product_info(query: str) -> str:
     """Search for products by name, description, or category. Returns availability and pricing."""
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     products = await provider.search_products(query)
     if not products:
         return f"No products found matching '{query}'."
@@ -63,7 +63,7 @@ async def get_product_info(query: str) -> str:
 @tool
 async def check_fulfillment_status(order_number: str) -> str:
     """Get detailed fulfillment and shipping status for an order including carrier and tracking."""
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     order = await provider.get_order_by_number(order_number)
     if not order:
         return f"No order found with number {order_number}."

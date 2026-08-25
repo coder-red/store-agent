@@ -15,6 +15,7 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"Starting {settings.store_name} support agent")
+    print(f"  Platform: {settings.resolved_platform}")
     print(f"  Demo mode: {settings.demo_mode}")
     print(f"  Channel: {settings.channel}")
     print(f"  LLM: {settings.llm_provider} / {settings.llm_model}")
@@ -27,7 +28,7 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
-app = FastAPI(title="Shopify Support Agent", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Store Agent", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

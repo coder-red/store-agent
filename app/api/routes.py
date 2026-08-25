@@ -5,7 +5,7 @@ from app.agents.multi_agent import run_agent_sync
 from app.agents.sentiment import analyze_sentiment
 from app.db.supabase import get_conversation, save_conversation, get_all_conversations, get_all_escalations
 from app.channels.manager import channel_manager
-from app.shopify.service import get_shopify_provider, reset_provider
+from app.commerce.service import get_store_provider, reset_provider
 from app.config import settings
 
 router = APIRouter()
@@ -151,7 +151,7 @@ async def get_analytics():
     total_msgs = sum(len(v) for v in convs.values())
     escalated_count = len(escalations)
 
-    from app.shopify.mock_data import mock_abandoned_carts
+    from app.commerce.demo_data import mock_abandoned_carts
     total_carts = len(mock_abandoned_carts)
     recovered_carts = sum(1 for c in mock_abandoned_carts if c["recovery_status"] == "recovered")
     recovered_revenue = sum(float(c["total"]) for c in mock_abandoned_carts if c["recovery_status"] == "recovered")
@@ -220,14 +220,14 @@ async def update_settings(config: DemoConfig):
 
 @router.get("/api/products")
 async def list_products():
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     products = await provider.get_all_products()
     return {"products": [{"id": p.id, "title": p.title, "vendor": p.vendor, "variants": [{"title": v.title, "price": v.price, "stock": v.inventory_quantity, "sku": v.sku} for v in p.variants]} for p in products]}
 
 
 @router.get("/api/orders")
 async def list_orders():
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     orders = await provider.get_all_orders()
     return {"orders": [{"id": o.id, "order_number": o.order_number, "customer_name": o.customer_name, "total": o.total_price, "status": o.financial_status, "fulfillment": o.fulfillment_status} for o in orders]}
 

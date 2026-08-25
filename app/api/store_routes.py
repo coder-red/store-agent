@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone, timedelta
-from app.shopify.service import get_shopify_provider
-from app.shopify.mock_data import mock_products, mock_orders, mock_abandoned_carts
+from app.commerce.service import get_store_provider
+from app.commerce.demo_data import mock_products, mock_orders, mock_abandoned_carts
 from app.agents.cart_recovery import CartRecoveryAgent
 
 router = APIRouter()
@@ -79,7 +79,7 @@ async def recovery_stats():
 
 @router.get("/store/products")
 async def store_products():
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     products = await provider.get_all_products()
     return {"products": [
         {
@@ -98,7 +98,7 @@ async def store_products():
 
 @router.get("/store/orders")
 async def store_orders():
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     orders = await provider.get_all_orders()
     return {"orders": [
         {

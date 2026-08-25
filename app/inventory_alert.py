@@ -1,10 +1,10 @@
-from app.shopify.service import get_shopify_provider
+from app.commerce.service import get_store_provider
 from app.channels.manager import channel_manager
 from app.config import settings
 
 
 async def check_inventory_and_alert():
-    provider = get_shopify_provider()
+    provider = get_store_provider()
     low_stock_items = await provider.check_inventory()
     if not low_stock_items:
         return

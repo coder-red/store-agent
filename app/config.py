@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     supabase_key: str = ""
 
     demo_mode: bool = True
+    # storefront plugin: "mock", "shopify", or "your.module:YourAdapterClass"
+    platform: str = ""
+
+    @property
+    def resolved_platform(self) -> str:
+        return self.platform or ("mock" if self.demo_mode else "shopify")
 
     channel: str = "webchat"
     twilio_account_sid: Optional[str] = None

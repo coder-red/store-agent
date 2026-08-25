@@ -32,7 +32,7 @@ export default function Sidebar() {
         </div>
         <div>
           <div style={{ fontWeight: 600, fontSize: 15 }}>Support AI</div>
-          <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Shopify Agent</div>
+          <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Store Agent</div>
         </div>
       </div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -58,7 +58,7 @@ export default function Sidebar() {
       </nav>
       <div style={{ marginTop: 'auto', padding: '12px', borderRadius: 8, background: 'var(--color-surface-light)', fontSize: 12, color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
         <div style={{ fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>Demo Mode</div>
-        Running with mock Shopify data. No real store connected.
+        Running with demo store data. No real store connected.
       </div>
     </aside>
   )

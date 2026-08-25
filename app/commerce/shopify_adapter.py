@@ -1,16 +1,24 @@
 import httpx
 from typing import Optional
 from app.config import settings
-from app.shopify.provider import ShopifyProvider, Order, Product, Variant
-
-SHOPIFY_BASE = f"https://{settings.shopify_store_domain}/admin/api/2024-10"
-HEADERS = {"X-Shopify-Access-Token": settings.shopify_api_key, "Content-Type": "application/json"}
+from app.commerce.base import CommerceProvider, Order, Product, Variant
 
 
-class RealShopifyProvider(ShopifyProvider):
+class ShopifyAdapter(CommerceProvider):
+    """Reference adapter: Shopify Admin REST API (2024-10)."""
+
+    platform_name = "shopify"
+
+    def __init__(self):
+        self.base = f"https://{settings.shopify_store_domain}/admin/api/2024-10"
+        self.headers = {
+            "X-Shopify-Access-Token": settings.shopify_api_key,
+            "Content-Type": "application/json",
+        }
+
     async def _get_json(self, path: str, params: dict = None) -> dict:
         async with httpx.AsyncClient() as client:
-            resp = await client.get(f"{SHOPIFY_BASE}{path}", headers=HEADERS, params=params or {}, timeout=15)
+            resp = await client.get(f"{self.base}{path}", headers=self.headers, params=params or {}, timeout=15)
             resp.raise_for_status()
             return resp.json()
 

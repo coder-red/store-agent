@@ -1,9 +1,13 @@
 from typing import Optional
-from app.shopify.provider import ShopifyProvider, Order, Product, Variant
-from app.shopify.mock_data import mock_products, mock_orders
+from app.commerce.base import CommerceProvider, Order, Product, Variant
+from app.commerce.demo_data import mock_products, mock_orders
 
 
-class MockShopifyProvider(ShopifyProvider):
+class MockStoreAdapter(CommerceProvider):
+    """In-memory demo store. Runs the whole agent with no platform connected."""
+
+    platform_name = "mock"
+
     def _order_from_dict(self, o: dict) -> Order:
         return Order(
             id=o["id"], order_number=o["order_number"],

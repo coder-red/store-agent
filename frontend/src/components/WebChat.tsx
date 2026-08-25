@@ -8,7 +8,7 @@ interface Message {
 
 export default function WebChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hello! I\'m your Shopify support agent. Try asking me:\n• "Where is my order?"\n• "Can I return order #1001?"\n• "Tell me about your backpacks"\n• "What\'s the status of order #1006?"' },
+    { role: 'assistant', content: 'Hello! I\'m your store support agent. Try asking me:\n• "Where is my order?"\n• "Can I return order #1001?"\n• "Tell me about your backpacks"\n• "What\'s the status of order #1006?"' },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)

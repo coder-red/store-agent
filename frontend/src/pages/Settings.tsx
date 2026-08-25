@@ -66,7 +66,7 @@ export default function Settings() {
             />
             <div>
               <div style={{ fontSize: 14, fontWeight: 500 }}>Demo Mode</div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Use mock Shopify data instead of a real store</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Use demo data instead of a real store</div>
             </div>
           </label>
         </div>
@@ -90,7 +90,7 @@ export default function Settings() {
           <div><strong style={{ color: 'var(--color-text)' }}>LLM Provider:</strong> {settings.llm_provider}</div>
           <div><strong style={{ color: 'var(--color-text)' }}>Model:</strong> {settings.llm_model}</div>
           <div><strong style={{ color: 'var(--color-text)' }}>Channel:</strong> {settings.channel}</div>
-          <div><strong style={{ color: 'var(--color-text)' }}>Mode:</strong> {settings.demo_mode ? 'Demo (mock data)' : 'Live (real Shopify)'}</div>
+          <div><strong style={{ color: 'var(--color-text)' }}>Mode:</strong> {settings.demo_mode ? 'Demo (mock data)' : 'Live (real store)'}</div>
         </div>
       </div>
     </div>

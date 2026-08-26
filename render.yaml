@@ -18,7 +18,7 @@ services:
       - key: CHANNEL
         value: "webchat"
       - key: STORE_NAME
-        value: "Demo Store"
+        value: "Northlane"
       - key: RETURN_WINDOW_DAYS
         value: "30"
       - key: INVENTORY_THRESHOLD

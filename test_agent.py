@@ -4,7 +4,7 @@ os.environ.setdefault("DEMO_MODE", "true")
 os.environ.setdefault("LLM_PROVIDER", "groq")
 os.environ.setdefault("LLM_MODEL", "openai/gpt-oss-120b")
 os.environ.setdefault("CHANNEL", "webchat")
-os.environ.setdefault("STORE_NAME", "Demo Store")
+os.environ.setdefault("STORE_NAME", "Northlane")
 
 import asyncio
 from app.agents.support_agent import run_agent_sync

@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     owner_email: Optional[str] = None
 
     inventory_threshold: int = 5
-    store_name: str = "Demo Store"
+    store_name: str = "Northlane"
     return_window_days: int = 30
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}

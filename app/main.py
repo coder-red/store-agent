@@ -62,8 +62,9 @@ if index_html.is_file():
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa(full_path: str):
-        file = static_dir / full_path
-        if full_path and file.is_file():
+        static_root = static_dir.resolve()
+        file = (static_dir / full_path).resolve()
+        if full_path and file.is_file() and file.is_relative_to(static_root):
             return FileResponse(str(file))
         return FileResponse(str(index_html))
 

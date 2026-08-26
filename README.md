@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/demo.gif" alt="Demo — customer asks about an order and a return; agent answers from store data; dashboard analytics update live" width="100%">
+  <img src="assets/conversations.png" alt="Conversations view — per-customer transcripts with status and message counts" width="90%">
 </p>
 
 <h1 align="center">Store Agent</h1>
@@ -34,7 +34,7 @@ Solo founders answer the same five questions all day — *where's my order, can 
 - **Pluggable storefronts.** The agent core never talks to a platform API directly — it calls a seven-method `CommerceProvider` interface (`app/commerce/base.py`). Shopify ships as the reference adapter; WooCommerce, Medusa or your custom backend is one subclass away. Set `PLATFORM` and go.
 - **Owner dashboard.** React + Vite admin: conversations and per-customer transcripts, real-time analytics over WebSocket (volume, escalation rate, sentiment), an email inbox, abandoned-cart recovery, an AI product-description generator, and settings.
 - **Beyond support.** Sentiment tagging on every message, low-inventory alerts to the owner, and a cart-recovery agent that drafts personalised win-back messages for abandoned carts.
-- **Demo mode.** `PLATFORM=mock` swaps in a demo store (orders #1001–#1015, a product catalogue, policies) so the whole thing runs with no store connected — that's what the GIF above is.
+- **Demo mode.** `PLATFORM=mock` swaps in a demo store (orders #1001–#1015, a product catalogue, policies) so the whole thing runs with no store connected — that's what the screenshots above show.
 
 ## Architecture
 

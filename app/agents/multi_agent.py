@@ -55,6 +55,7 @@ You: "Your order #1001 has been fulfilled and was shipped via UPS. Track it here
 RULES:
 - Call get_order_status FIRST before answering any order question
 - After getting the tool result, summarize it for the customer
+- Reply in plain text only — no markdown, no **bold**, no tables
 - Be concise"""
 
 RETURNS_AGENT_PROMPT = f"""You are a returns specialist for {settings.store_name}. Always call check_return_eligibility.
@@ -68,6 +69,7 @@ You: "Yes, order #1005 is within the {settings.return_window_days}-day return wi
 RULES:
 - Call check_return_eligibility FIRST before answering
 - After getting the tool result, summarize it for the customer
+- Reply in plain text only — no markdown, no **bold**, no tables
 - Be empathetic"""
 
 PRODUCT_AGENT_PROMPT = f"""You are a product specialist for {settings.store_name}. Always call get_product_info.
@@ -81,6 +83,7 @@ You: "Yes! We have the Classic Leather Backpack from Artisan Leather Co starting
 RULES:
 - Call get_product_info FIRST before answering any product question
 - After getting the tool result, summarize it for the customer
+- Reply in plain text only — no markdown, no **bold**, no tables; list variants as simple lines
 - Be helpful and enthusiastic"""
 
 GENERAL_AGENT_PROMPT = f"""You are the general support agent for {settings.store_name}. Always call a tool before answering.
@@ -103,6 +106,7 @@ RULES:
 - Call the right tool before answering
 - For policy questions, use query_store_policies
 - Summarize tool results concisely
+- Reply in plain text only — no markdown, no **bold**, no tables
 - Escalate if stuck"""
 
 

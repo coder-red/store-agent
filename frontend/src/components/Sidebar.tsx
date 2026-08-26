@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, MessageSquare, BarChart3, Settings, HeadphonesIcon, Mail, ShoppingCart, FileText } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Package, BarChart3, Settings, HeadphonesIcon, Mail, ShoppingCart, FileText } from 'lucide-react'
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/conversations', label: 'Conversations', icon: MessageSquare },
+  { to: '/orders', label: 'Orders', icon: Package },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/email', label: 'Email Inbox', icon: Mail },
   { to: '/cart-recovery', label: 'Cart Recovery', icon: ShoppingCart },

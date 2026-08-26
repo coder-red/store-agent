@@ -229,7 +229,20 @@ async def list_products():
 async def list_orders():
     provider = get_store_provider()
     orders = await provider.get_all_orders()
-    return {"orders": [{"id": o.id, "order_number": o.order_number, "customer_name": o.customer_name, "total": o.total_price, "status": o.financial_status, "fulfillment": o.fulfillment_status} for o in orders]}
+    return {"orders": [{
+        "id": o.id,
+        "order_number": o.order_number,
+        "customer_name": o.customer_name,
+        "customer_email": o.customer_email,
+        "total": o.total_price,
+        "currency": o.currency,
+        "status": o.financial_status,
+        "fulfillment": o.fulfillment_status,
+        "created_at": o.created_at,
+        "tracking_company": o.tracking_company,
+        "tracking_number": o.tracking_number,
+        "tracking_url": o.tracking_url,
+    } for o in orders]}
 
 
 connected_websockets: set[WebSocket] = set()

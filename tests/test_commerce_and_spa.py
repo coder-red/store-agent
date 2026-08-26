@@ -103,6 +103,16 @@ def test_api_still_json_not_shadowed(client):
     assert r.json()["store_name"]
 
 
+def test_api_orders_includes_owner_fields(client):
+    r = client.get("/api/orders")
+    assert r.status_code == 200
+    orders = r.json()["orders"]
+    assert orders, "mock store should have orders"
+    o = orders[0]
+    for field in ("customer_email", "created_at", "currency", "tracking_number"):
+        assert field in o
+
+
 # --- Customer order tracking (privacy: only your own order) ---
 
 def _place_order(client, email="track.me@example.com"):

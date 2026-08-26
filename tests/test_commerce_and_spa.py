@@ -101,3 +101,51 @@ def test_api_still_json_not_shadowed(client):
     r = client.get("/api/settings")
     assert r.status_code == 200
     assert r.json()["store_name"]
+
+
+# --- Customer order tracking (privacy: only your own order) ---
+
+def _place_order(client, email="track.me@example.com"):
+    from app.commerce.demo_data import mock_products
+    p = mock_products[0]
+    v = p["variants"][0]
+    r = client.post("/store/orders", json={
+        "customer_name": "Track Me", "customer_email": email,
+        "product_id": p["id"], "variant_id": v["id"], "quantity": 1,
+    })
+    assert r.status_code == 200
+    return r.json()["order"]["order_number"]
+
+
+def test_track_returns_own_order(client):
+    num = _place_order(client)
+    r = client.get(f"/store/track?order_number={num}&email=track.me@example.com")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["order_number"] == num
+    assert "customer_email" not in body
+    assert "customer_name" not in body
+
+
+def test_track_rejects_wrong_email(client):
+    num = _place_order(client)
+    r = client.get(f"/store/track?order_number={num}&email=thief@example.com")
+    assert r.status_code == 404
+
+
+def test_track_rejects_unknown_order(client):
+    r = client.get("/store/track?order_number=999999&email=nobody@example.com")
+    assert r.status_code == 404
+
+
+def test_track_requires_both_fields(client):
+    assert client.get("/store/track?order_number=1006").status_code == 400
+    assert client.get("/store/track?email=a@b.com").status_code == 400
+
+
+def test_all_orders_endpoint_is_gone(client):
+    # the public all-orders listing leaked every customer's email; it must not exist.
+    # (a removed path falls through to the SPA fallback, so expect HTML, never JSON)
+    r = client.get("/store/orders")
+    assert "application/json" not in r.headers.get("content-type", "")
+    assert "orders" not in r.text[:200] or "<html" in r.text.lower()

@@ -96,23 +96,31 @@ async def store_products():
     ]}
 
 
-@router.get("/store/orders")
-async def store_orders():
+@router.get("/store/track")
+async def track_order(order_number: str = "", email: str = ""):
+    """Customer-facing order lookup. Requires BOTH order number and the
+    email used at checkout -- customers can only ever see their own order."""
+    order_number = order_number.strip().lstrip("#")
+    email = email.strip().lower()
+    if not order_number or not email:
+        raise HTTPException(400, "Order number and email are both required.")
     provider = get_store_provider()
-    orders = await provider.get_all_orders()
-    return {"orders": [
-        {
-            "id": o.id,
-            "order_number": o.order_number,
-            "customer_name": o.customer_name,
-            "customer_email": o.customer_email,
-            "total": o.total_price,
-            "status": o.financial_status,
-            "fulfillment": o.fulfillment_status,
-            "created_at": o.created_at,
-        }
-        for o in orders
-    ]}
+    order = await provider.get_order_by_number(order_number)
+    if not order or order.customer_email.strip().lower() != email:
+        raise HTTPException(404, "We couldn't find an order matching those details.")
+    return {
+        "order_number": order.order_number,
+        "status": order.financial_status,
+        "fulfillment": order.fulfillment_status,
+        "placed_at": order.created_at,
+        "total": order.total_price,
+        "currency": order.currency,
+        "tracking": {
+            "company": order.tracking_company,
+            "number": order.tracking_number,
+            "url": order.tracking_url,
+        },
+    }
 
 
 @router.post("/store/orders")

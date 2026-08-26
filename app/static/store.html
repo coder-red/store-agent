@@ -103,7 +103,7 @@ footer a:hover { text-decoration: underline; }
   <h1>NORTH<span>LANE</span></h1>
   <nav>
     <a href="/store.html">Shop</a>
-    <button onclick="showOrders()">Track an order</button>
+    <button onclick="showTrack()">Track an order</button>
     <button onclick="toggleChat()">Support</button>
   </nav>
 </div>
@@ -113,7 +113,7 @@ footer a:hover { text-decoration: underline; }
     <p>Leather carry, home essentials, and wellness gear from independent makers — free shipping on orders over $75 and a 30-day return window on everything.</p>
     <div class="cta">
       <button class="primary" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">Shop new arrivals</button>
-      <button class="secondary" onclick="showOrders()">Track your order</button>
+      <button class="secondary" onclick="showTrack()">Track your order</button>
     </div>
   </div>
   <div class="trust" id="trust">
@@ -185,11 +185,17 @@ footer a:hover { text-decoration: underline; }
   </div>
 </div>
 
-<div class="modal-overlay" id="orders-modal">
-  <div class="modal" style="max-width:700px">
-    <button class="modal-close" onclick="closeOrders()">x</button>
-    <h2>Track orders</h2>
-    <div id="orders-list" style="margin-top:16px;font-size:14px"></div>
+<div class="modal-overlay" id="track-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeTrack()">x</button>
+    <h2>Track your order</h2>
+    <div class="vendor-label">Enter the order number and the email you used at checkout.</div>
+    <label for="track-number">Order number</label>
+    <input id="track-number" placeholder="e.g. 1006">
+    <label for="track-email">Email</label>
+    <input id="track-email" type="email" placeholder="you@example.com">
+    <button class="order-btn" onclick="lookupOrder()">Track order</button>
+    <div id="track-result" style="margin-top:16px;font-size:14px"></div>
   </div>
 </div>
 
@@ -206,7 +212,7 @@ footer a:hover { text-decoration: underline; }
 </div>
 
 <script>
-let allProducts = [], allOrders = [];
+let allProducts = [];
 
 async function loadProducts() {
   const r = await fetch('/store/products');
@@ -214,10 +220,6 @@ async function loadProducts() {
   const sel = document.getElementById('vendor-filter');
   [...new Set(allProducts.map(p => p.vendor))].sort().forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
   renderProducts();
-}
-async function loadOrders() {
-  const r = await fetch('/store/orders');
-  allOrders = (await r.json()).orders || [];
 }
 function renderProducts() {
   const q = document.getElementById('search').value.toLowerCase();
@@ -268,17 +270,39 @@ async function placeOrder() {
       document.getElementById('step-product').style.display = 'none';
       confirm.innerHTML = `<b>Order #${d.order.order_number} confirmed.</b> A confirmation email is on its way to you. Need anything? Ask the support agent in the bottom-right corner.`;
       confirm.className = 'order-confirm show';
-      loadProducts(); loadOrders();
+      loadProducts();
     }
     else { confirm.textContent = d.detail || 'Something went wrong. Please try again.'; confirm.className = 'order-confirm show'; }
   } catch(e) { confirm.textContent = `Something went wrong: ${e.message}`; confirm.className = 'order-confirm show'; }
 }
-function showOrders() {
-  const list = document.getElementById('orders-list');
-  list.innerHTML = !allOrders.length ? '<div style="color:#888">No orders yet — place one from the shop.</div>' : '<table style="width:100%;border-collapse:collapse"><tr style="background:#f6f7fa"><th style="padding:8px;text-align:left;border-bottom:2px solid #e2e5ec">Order</th><th style="padding:8px;text-align:left;border-bottom:2px solid #e2e5ec">Customer</th><th style="padding:8px;text-align:left;border-bottom:2px solid #e2e5ec">Total</th><th style="padding:8px;text-align:left;border-bottom:2px solid #e2e5ec">Payment</th><th style="padding:8px;text-align:left;border-bottom:2px solid #e2e5ec">Fulfillment</th></tr>' + allOrders.sort((a,b)=>b.order_number-a.order_number).map(o => `<tr><td style="padding:8px;border-bottom:1px solid #eee"><b>#${o.order_number}</b></td><td style="padding:8px;border-bottom:1px solid #eee">${o.customer_name}</td><td style="padding:8px;border-bottom:1px solid #eee">$${o.total}</td><td style="padding:8px;border-bottom:1px solid #eee">${o.status}</td><td style="padding:8px;border-bottom:1px solid #eee">${o.fulfillment}</td></tr>`).join('') + '</table>';
-  document.getElementById('orders-modal').classList.add('open');
+function showTrack() {
+  document.getElementById('track-number').value = '';
+  document.getElementById('track-email').value = '';
+  document.getElementById('track-result').innerHTML = '';
+  document.getElementById('track-modal').classList.add('open');
 }
-function closeOrders() { document.getElementById('orders-modal').classList.remove('open'); }
+function closeTrack() { document.getElementById('track-modal').classList.remove('open'); }
+async function lookupOrder() {
+  const num = document.getElementById('track-number').value.trim();
+  const email = document.getElementById('track-email').value.trim();
+  const out = document.getElementById('track-result');
+  if (!num || !email) { out.innerHTML = '<div style="color:#b45309">Enter both your order number and email.</div>'; return; }
+  out.innerHTML = '<div style="color:#888">Looking it up...</div>';
+  try {
+    const r = await fetch(`/store/track?order_number=${encodeURIComponent(num)}&email=${encodeURIComponent(email)}`);
+    const d = await r.json();
+    if (!r.ok) { out.innerHTML = `<div style="color:#b45309">${d.detail || 'Order not found.'}</div>`; return; }
+    const f = d.fulfillment === 'fulfilled' ? '<span style="color:#16a34a;font-weight:600">Fulfilled</span>' : `<span style="color:#d97706;font-weight:600">${d.fulfillment || 'Processing'}</span>`;
+    const pay = d.status === 'paid' ? '<span style="color:#16a34a;font-weight:600">Paid</span>' : `<span style="font-weight:600">${d.status}</span>`;
+    let track = '';
+    if (d.tracking && d.tracking.number) {
+      track = `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2e5ec"><b>Carrier:</b> ${d.tracking.company || '—'}<br><b>Tracking:</b> ${d.tracking.number}${d.tracking.url ? ` — <a href="${d.tracking.url}" target="_blank" rel="noopener">track package</a>` : ''}</div>`;
+    }
+    out.innerHTML = `<div style="background:#f6f7fa;border-radius:10px;padding:16px"><b>Order #${d.order_number}</b><div style="margin-top:6px"><b>Payment:</b> ${pay} &nbsp;·&nbsp; <b>Fulfillment:</b> ${f}</div><div style="margin-top:4px"><b>Total:</b> ${d.currency} ${d.total}</div>${track}<div style="margin-top:10px;color:#888;font-size:13px">Questions about this order? Ask the support agent — it can see your order too.</div></div>`;
+  } catch(e) {
+    out.innerHTML = '<div style="color:#b45309">Something went wrong. Please try again.</div>';
+  }
+}
 function toggleChat() { const w = document.getElementById('chat-widget'); w.classList.toggle('open'); if (w.classList.contains('open')) document.getElementById('chat-input').focus(); }
 async function sendMessage() {
   const input = document.getElementById('chat-input');
@@ -303,7 +327,6 @@ async function sendMessage() {
   document.getElementById('chat-send').disabled = false;
 }
 loadProducts();
-loadOrders();
 </script>
 </body>
 </html>

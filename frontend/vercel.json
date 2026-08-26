@@ -3,27 +3,27 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://shopify-support-agent-trjx.onrender.com/api/$1"
+      "destination": "https://store-agent-app.onrender.com/api/$1"
     },
     {
       "source": "/webhook/(.*)",
-      "destination": "https://shopify-support-agent-trjx.onrender.com/webhook/$1"
+      "destination": "https://store-agent-app.onrender.com/webhook/$1"
     },
     {
       "source": "/store/(.*)",
-      "destination": "https://shopify-support-agent-trjx.onrender.com/store/$1"
+      "destination": "https://store-agent-app.onrender.com/store/$1"
     },
     {
       "source": "/store.html",
-      "destination": "https://shopify-support-agent-trjx.onrender.com/store.html"
+      "destination": "https://store-agent-app.onrender.com/store.html"
     },
     {
       "source": "/favicon.svg",
-      "destination": "https://shopify-support-agent-trjx.onrender.com/favicon.svg"
+      "destination": "https://store-agent-app.onrender.com/favicon.svg"
     },
     {
       "source": "/health",
-      "destination": "https://shopify-support-agent-trjx.onrender.com/health"
+      "destination": "https://store-agent-app.onrender.com/health"
     },
     {
       "source": "/(.*)",

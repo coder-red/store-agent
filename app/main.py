@@ -54,4 +54,17 @@ if store_html.is_file():
 
     print(f"Serving storefront from {store_html}")
 
-print("API only mode - frontend served separately on Vercel")
+index_html = static_dir / "index.html"
+if index_html.is_file():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/assets", StaticFiles(directory=static_dir / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa(full_path: str):
+        file = static_dir / full_path
+        if full_path and file.is_file():
+            return FileResponse(str(file))
+        return FileResponse(str(index_html))
+
+    print(f"Serving dashboard from {index_html}")

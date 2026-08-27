@@ -1,6 +1,5 @@
 <div align="center">
 
-  <img src="assets/dashboard.png" alt="Store Agent owner dashboard" width="90%">
 
   <h1>Store Agent</h1>
 

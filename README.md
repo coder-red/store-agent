@@ -1,15 +1,25 @@
-<p align="center">
-  <img src="assets/conversations.png" alt="Conversations view — per-customer transcripts with status and message counts" width="90%">
-</p>
+<a id="readme-top"></a>
 
-<h1 align="center">Store Agent</h1>
+<div align="center">
 
-<p align="center">
-  <strong>AI customer support for online stores that don't have a support team.</strong><br>
-  A LangGraph agent answers order, return, product and policy questions from live store data across web chat, WhatsApp, Telegram and email — and escalates to the owner when it shouldn't guess. Plugs into any storefront platform.
-</p>
+  <img src="assets/dashboard.png" alt="Store Agent Dashboard" width="90%">
 
-<p align="center">
+  <h1>Store Agent</h1>
+
+  <p>
+    AI customer support for online stores that don't have a support team.<br>
+    Answers order, return, product and policy questions from live store data.<br>
+    Plugs into any storefront platform.
+  </p>
+
+  <p>
+    <a href="https://store-agent-app.onrender.com/store.html">View Demo</a>
+    &middot;
+    <a href="https://github.com/coder-red/store-agent/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    &middot;
+    <a href="https://github.com/coder-red/store-agent/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
+
   <img src="https://img.shields.io/badge/LangGraph-1C3C3C?logo=langchain&logoColor=white" alt="LangGraph">
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-20232a?logo=react&logoColor=61DAFB" alt="React">
@@ -18,23 +28,129 @@
   <img src="https://img.shields.io/badge/Twilio%20WhatsApp-F22F46?logo=twilio&logoColor=white" alt="Twilio">
   <img src="https://img.shields.io/badge/Telegram-26A5E4?logo=telegram&logoColor=white" alt="Telegram">
   <img src="https://img.shields.io/badge/Groq-F55036?logo=groq&logoColor=white" alt="Groq">
-</p>
+
+</div>
 
 ---
 
-## The problem
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#adding-a-storefront-platform">Adding a Storefront Platform</a></li>
+    <li><a href="#api">API</a></li>
+    <li><a href="#deployment">Deployment</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-Solo founders answer the same five questions all day — *where's my order, can I return this, do you have it in blue, what's your policy, I need a human* — usually across three apps. Hiring support isn't an option at that stage; ignoring it costs sales. This system answers the repetitive 80% from real store data, hands the rest to the owner with context, and shows the founder what customers are actually asking.
+---
 
-## What it does
+## About The Project
 
-- **Answers from store data, not from a prompt.** The agent has six tools: `get_order_status`, `check_fulfillment_status`, `check_return_eligibility` (against the store's return window), `get_product_info`, `query_store_policies` (knowledge base) and `escalate_to_human`.
-- **Escalates instead of guessing.** Anything outside those categories, or anything uncertain, is routed to `escalate_to_human`, which pushes the conversation + reason to the owner on their channel (WhatsApp / Telegram / email) and logs it.
-- **Multi-channel.** One channel adapter interface, four adapters: web chat (WebSocket), WhatsApp (Twilio), Telegram (Bot API), email (webhook in, Resend out). Set `CHANNEL` and the same agent runs behind any of them.
-- **Pluggable storefronts.** The agent core never talks to a platform API directly — it calls a seven-method `CommerceProvider` interface (`app/commerce/base.py`). Shopify ships as the reference adapter; WooCommerce, Medusa or your custom backend is one subclass away. Set `PLATFORM` and go.
-- **Owner dashboard.** React + Vite admin: conversations and per-customer transcripts, real-time analytics over WebSocket (volume, escalation rate, sentiment), an email inbox, abandoned-cart recovery, an AI product-description generator, and settings.
-- **Beyond support.** Sentiment tagging on every message, low-inventory alerts to the owner, and a cart-recovery agent that drafts personalised win-back messages for abandoned carts.
-- **Demo mode.** `PLATFORM=mock` swaps in a demo store (orders #1001–#1015, a product catalogue, policies) so the whole thing runs with no store connected — that's what the screenshots above show.
+[![Dashboard][dashboard-screenshot]](https://store-agent-app.onrender.com)
+
+Solo founders answer the same five questions all day — *where's my order, can I return this, do you have it in blue, what's your policy, I need a human* — usually across three apps. Hiring support isn't an option at that stage; ignoring it costs sales.
+
+Store Agent answers the repetitive 80% from real store data, hands the rest to the owner with context, and shows the founder what customers are actually asking. It runs across web chat, WhatsApp, Telegram and email — one agent, any channel.
+
+The storefront is a plugin. Shopify ships as the reference adapter; WooCommerce, Medusa or your custom backend is one subclass away.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Getting Started
+
+### Prerequisites
+
+* Python 3.10+
+* Node.js 18+
+* A [Groq](https://groq.com) API key (free tier works)
+
+### Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/coder-red/store-agent.git
+   ```
+2. Install backend dependencies
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. Set up your environment
+   ```sh
+   cp .env.example .env
+   # Edit .env — set GROQ_API_KEY and PLATFORM=mock to start
+   ```
+4. Start the backend
+   ```sh
+   uvicorn app.main:app --reload --port 8000
+   ```
+5. Start the dashboard
+   ```sh
+   cd frontend && npm install && npm run dev
+   ```
+6. Open http://localhost:5173
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Usage
+
+Try it without the UI:
+
+```sh
+curl -X POST localhost:8000/webhook/test \
+  -H 'content-type: application/json' \
+  -d '{"customer_identifier":"demo","message":"Where is my order #1006?"}'
+```
+
+Connect a real Shopify store:
+
+```sh
+PLATFORM=shopify
+SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
+SHOPIFY_API_KEY=your_key
+SHOPIFY_API_SECRET=your_secret
+```
+
+Channels — set `CHANNEL` to switch:
+
+| Channel | Environment variables |
+|---|---|
+| Web chat | `CHANNEL=webchat` (default) |
+| WhatsApp | `CHANNEL=whatsapp`, `TWILIO_*` |
+| Telegram | `CHANNEL=telegram`, `TELEGRAM_BOT_TOKEN`, `OWNER_TELEGRAM_CHAT_ID` |
+| Email | `CHANNEL=email`, `RESEND_API_KEY`, `SUPPORT_EMAIL` |
+
+See [`.env.example`](.env.example) for the full list.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Features
+
+- **Answers from store data** — six tools: order status, fulfillment, return eligibility, product info, store policies, escalate to human
+- **Escalates instead of guessing** — uncertain or out-of-scope questions route to the owner with full context
+- **Multi-channel** — web chat, WhatsApp, Telegram, email — one agent, same tools
+- **Pluggable storefronts** — `CommerceProvider` interface with seven methods; swap Shopify for any platform via one env var
+- **Owner dashboard** — conversations, analytics, orders, email inbox, cart recovery, product descriptions, settings
+- **Sentiment tagging** — every message tagged as positive, neutral or negative
+- **Cart recovery** — drafts personalised win-back messages for abandoned carts
+- **Demo mode** — `PLATFORM=mock` runs with sample data, no store connected
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Architecture
 
@@ -43,83 +159,66 @@ Solo founders answer the same five questions all day — *where's my order, can 
   WhatsApp ──────┤  Twilio webhook          ┌──────────────────────────────┐
   Telegram ──────┤  Bot API        ───────► │ FastAPI                      │
   Email ─────────┘  inbound webhook         │  /webhook/*  /api/*  /ws/chat│
-                                            └──────────────┬───────────────┘
-                                                           ▼
-                                   ┌───────────────────────────────────────┐
-                                   │ Supervisor (LLM router)               │
-                                   │  orders │ returns │ products │ general│
-                                   └───────────────────┬───────────────────┘
-                                                       ▼
-                                   ┌───────────────────────────────────────┐
-                                   │ LangGraph ReAct agent (per category)  │
-                                   │ tools → CommerceProvider (the plug)   │
-                                   │       → knowledge base               │
-                                   │       → escalate_to_human ──► owner   │
-                                   └───────────────────┬───────────────────┘
-                                                       ▼
-                                    ┌────────────────────────────────────┐
-                                    │ Platform adapters                  │
-                                    │  mock (demo) │ shopify │ yours     │
-                                    └────────────────────────────────────┘
-                                                       ▼
-                                           Supabase (conversations, escalations)
-                                           Dashboard (React) ◄── WebSocket events
+                                           └──────────────┬───────────────┘
+                                                          ▼
+                                  ┌───────────────────────────────────────┐
+                                  │ Supervisor (LLM router)               │
+                                  │  orders │ returns │ products │ general│
+                                  └───────────────────┬───────────────────┘
+                                                      ▼
+                                  ┌───────────────────────────────────────┐
+                                  │ LangGraph ReAct agent (per category)  │
+                                  │ tools → CommerceProvider (the plug)   │
+                                  │       → knowledge base               │
+                                  │       → escalate_to_human ──► owner   │
+                                  └───────────────────┬───────────────────┘
+                                                      ▼
+                                   ┌────────────────────────────────────┐
+                                   │ Platform adapters                  │
+                                   │  mock (demo) │ shopify │ yours     │
+                                   └────────────────────────────────────┘
+                                                      ▼
+                                          Supabase (conversations, escalations)
+                                          Dashboard (React) ◄── WebSocket events
 ```
 
-Requests go through a supervisor → specialist layout ([`app/agents/multi_agent.py`](app/agents/multi_agent.py)): a cheap routing call picks `orders / returns / products / general`, each specialist is a `create_react_agent` with only the tools it needs (the returns agent, for example, gets `check_return_eligibility` + `escalate_to_human`), and an `on_supervisor_route` event is streamed so the dashboard can show which specialist answered. A single-agent variant with the full toolset ([`app/agents/support_agent.py`](app/agents/support_agent.py)) is kept for comparison.
+Requests go through a supervisor → specialist layout: a routing call picks `orders / returns / products / general`, each specialist is a ReAct agent with only the tools it needs, and the dashboard shows which specialist answered. A single-agent variant with the full toolset is kept for comparison.
 
 ### Design decisions
 
 | Decision | Why |
 |---|---|
-| **Tools call the store; the model never invents order data** | Every order/product answer is a tool result. The system prompt forbids answering from memory and lists exactly five categories; the sixth path is escalation. |
-| **`escalate_to_human` is a tool, not an error path** | The model decides to escalate like any other action, so it can include a reason and a summary. Escalations are stored and pushed to the owner's channel with the transcript. |
-| **The storefront is a plugin, not a feature** | `CommerceProvider` (`app/commerce/base.py`) is a seven-method contract returning platform-neutral dataclasses. The core doesn't know Shopify exists. |
-| **Channel adapters over a shared base** | `channels/base.py` defines `send_message` / `send_to_owner`; WhatsApp, Telegram, email and web chat implement it. Adding a channel is one file. |
-| **Streaming everywhere** | The agent streams LangGraph events; web chat gets tokens over WebSocket, and the dashboard subscribes to the same stream for live analytics. |
-| **Groq for inference** | Sub-second first token on `gpt-oss-120b`; the LLM provider/model are env-configurable (`LLM_PROVIDER`, `LLM_MODEL`) so OpenRouter or Anthropic drop in. |
+| Tools call the store; the model never invents order data | Every order/product answer is a tool result. The system prompt forbids answering from memory. |
+| `escalate_to_human` is a tool, not an error path | The model decides to escalate like any other action, so it can include a reason and a summary. |
+| The storefront is a plugin, not a feature | `CommerceProvider` is a seven-method contract returning platform-neutral dataclasses. The core doesn't know Shopify exists. |
+| Channel adapters over a shared base | `channels/base.py` defines `send_message` / `send_to_owner`; each channel implements it. Adding a channel is one file. |
+| Streaming everywhere | The agent streams events; web chat gets tokens over WebSocket, and the dashboard subscribes to the same stream. |
+| Groq for inference | Sub-second first token; the LLM provider/model are env-configurable. |
 
-## Adding a storefront platform
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-Subclass `CommerceProvider` and implement seven async methods — `get_order_by_number`, `get_order_by_email`, `search_products`, `get_fulfillments`, `get_all_products`, `get_all_orders`, `check_inventory` — mapping each onto your platform's API and normalising into the shared `Order` / `Product` / `Variant` dataclasses. Then:
+## Adding a Storefront Platform
+
+Subclass `CommerceProvider` and implement seven async methods:
 
 ```python
-# my_store/adapter.py
 from app.commerce.base import CommerceProvider
 
 class MyPlatformAdapter(CommerceProvider):
     platform_name = "myplatform"
-    # ... implement the seven methods ...
+    # get_order_by_number, get_order_by_email, search_products,
+    # get_fulfillments, get_all_products, get_all_orders, check_inventory
 ```
 
-```bash
-PLATFORM=my_store.adapter:MyPlatformAdapter   # module path : class name
+Then set:
+
+```sh
+PLATFORM=my_store.adapter:MyPlatformAdapter
 ```
 
-Built-ins: `PLATFORM=mock` (demo store), `PLATFORM=shopify` (uses `SHOPIFY_*` credentials). If `PLATFORM` is unset, `DEMO_MODE=true` selects mock and `false` selects shopify.
+Built-ins: `PLATFORM=mock` (demo store), `PLATFORM=shopify` (uses `SHOPIFY_*` credentials).
 
-## Running it locally
-
-```bash
-# backend
-pip install -r requirements.txt
-cp .env.example .env            # PLATFORM=mock, GROQ_API_KEY=..., CHANNEL=webchat
-uvicorn app.main:app --reload --port 8000
-
-# dashboard
-cd frontend && npm install && npm run dev      # http://localhost:5173, proxies /api and /ws to :8000
-```
-
-Try it without the UI:
-
-```bash
-curl -X POST localhost:8000/webhook/test \
-  -H 'content-type: application/json' \
-  -d '{"customer_identifier":"demo","message":"Where is my order #1006?"}'
-# → {"response":"Your order #1006 has been paid but hasn't been fulfilled yet…"}
-```
-
-Connect a real Shopify store: set `PLATFORM=shopify` and `SHOPIFY_STORE_DOMAIN` / `SHOPIFY_API_KEY` / `SHOPIFY_API_SECRET`. Channels: `TWILIO_*` for WhatsApp, `TELEGRAM_BOT_TOKEN` + `OWNER_TELEGRAM_CHAT_ID`, `RESEND_API_KEY` + `SUPPORT_EMAIL` for email. See [`.env.example`](.env.example).
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## API
 
@@ -129,23 +228,76 @@ Connect a real Shopify store: set `PLATFORM=shopify` and `SHOPIFY_STORE_DOMAIN` 
 | `POST /webhook/email` | Inbound email webhook |
 | `WS /ws/chat` | Streaming web chat + dashboard live events |
 | `GET /api/conversations`, `/api/conversations/{id}` | Transcripts |
+| `GET /api/orders` | Owner order ledger |
 | `GET /api/escalations`, `/api/analytics` | Owner views |
 | `POST /api/generate-descriptions` | Product-description generator |
-| `GET /store/carts/abandoned`, `POST /store/carts/{id}/recover`, `POST /store/carts/auto-recover` | Cart recovery |
+| `GET /store/carts/abandoned`, `POST /store/carts/{id}/recover` | Cart recovery |
+| `GET /store/track` | Customer order lookup |
 | `GET /health` | Mode, platform, channel, model |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment
 
-`render.yaml` deploys the API (free tier); the dashboard builds to static files for Vercel and `frontend/vercel.json` rewrites `/api`, `/ws`, `/webhook` to the backend URL.
+`render.yaml` deploys the API (free tier). The dashboard builds to static files for Vercel; `frontend/vercel.json` rewrites `/api`, `/ws`, `/webhook` to the backend URL.
 
-## Limitations & next
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-- Conversation state is JSON on disk in demo mode; Supabase in production. No per-tenant isolation yet — one deployment = one store.
-- The supervisor adds one extra LLM call per turn; the single-agent variant is cheaper if latency matters more than tool isolation.
-- Return eligibility is window-based only; it doesn't yet read platform return rules or create the return.
-- Cart recovery currently runs on demo data; wiring it through `CommerceProvider` needs a carts method on the contract.
+## Roadmap
 
-## Author
+- [x] Plugin architecture for storefront platforms
+- [x] Multi-channel support (web, WhatsApp, Telegram, email)
+- [x] Owner dashboard with analytics
+- [x] Cart recovery agent
+- [x] Product description generator
+- [x] Demo mode with mock data
+- [ ] Per-tenant isolation
+- [ ] Platform return rules integration
+- [ ] Cart recovery through `CommerceProvider`
 
-**Mohammed Ahmed Babatunde** — AI engineer, Lagos.
+See the [open issues](https://github.com/coder-red/store-agent/issues) for a full list of proposed features and known issues.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## License
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contact
+
+**Mohammed Ahmed Babatunde** — AI engineer, Lagos
+
 [github.com/coder-red](https://github.com/coder-red) · [linkedin.com/in/coder-red](https://linkedin.com/in/coder-red) · mohammed.ds.ml01@gmail.com
+
+Project Link: [https://github.com/coder-red/store-agent](https://github.com/coder-red/store-agent)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Acknowledgments
+
+* [LangChain](https://github.com/langchain-ai) — LangGraph agent framework
+* [Groq](https://groq.com) — fast inference
+* [FastAPI](https://fastapi.tiangolo.com) — backend framework
+* [React](https://react.dev) — dashboard UI
+* [Supabase](https://supabase.com) — data storage
+* [shields.io](https://shields.io) — badges
+* [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) — README structure
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[dashboard-screenshot]: assets/dashboard.png

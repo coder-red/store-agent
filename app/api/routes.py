@@ -193,10 +193,25 @@ async def get_analytics():
     total_msgs = sum(len(v) for v in convs.values())
     escalated_count = len(escalations)
 
+    # Revenue + order stats come from the real store via the commerce
+    # provider, so the numbers reflect actual orders, not mock data.
+    provider = get_store_provider()
+    orders = await provider.get_all_orders()
+    paid_orders = [o for o in orders if o.financial_status == "paid"]
+    total_revenue = sum(float(o.total_price) for o in paid_orders)
+    fulfilled = sum(1 for o in orders if o.fulfillment_status == "fulfilled")
+    pending = sum(1 for o in orders if o.financial_status == "pending")
+
+    # Cart recovery. Uses the provider's abandoned carts when available,
+    # falling back to the demo carts in mock mode.
     from app.commerce.demo_data import mock_abandoned_carts
-    total_carts = len(mock_abandoned_carts)
-    recovered_carts = sum(1 for c in mock_abandoned_carts if c["recovery_status"] == "recovered")
-    recovered_revenue = sum(float(c["total"]) for c in mock_abandoned_carts if c["recovery_status"] == "recovered")
+    carts = mock_abandoned_carts
+    provider_carts = getattr(provider, "abandoned_carts", None)
+    if provider_carts is not None:
+        carts = provider_carts
+    total_carts = len(carts)
+    recovered_carts = sum(1 for c in carts if c.get("recovery_status") == "recovered")
+    recovered_revenue = sum(float(c["total"]) for c in carts if c.get("recovery_status") == "recovered")
 
     pos = neg = neutral = 0
     for msgs in convs.values():
@@ -213,6 +228,13 @@ async def get_analytics():
         "escalated_count": escalated_count,
         "escalation_rate": round(escalated_count / total * 100, 1) if total > 0 else 0,
         "channels": [settings.channel],
+        "orders": {
+            "total_orders": len(orders),
+            "paid": len(paid_orders),
+            "fulfilled": fulfilled,
+            "pending": pending,
+            "total_revenue": f"${total_revenue:.2f}",
+        },
         "cart_recovery": {
             "total_carts": total_carts,
             "recovered": recovered_carts,

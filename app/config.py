@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     supabase_url: str = ""
     supabase_key: str = ""
+    supabase_database_url: str = ""
 
     demo_mode: bool = True
     # storefront plugin: "mock", "shopify", or "your.module:YourAdapterClass"

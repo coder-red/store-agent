@@ -1,12 +1,16 @@
 from typing import Optional
 from app.commerce.base import CommerceProvider, Order, Product, Variant
-from app.commerce.demo_data import mock_products, mock_orders
+from app.commerce.demo_data import mock_products, mock_orders, mock_abandoned_carts
 
 
 class MockStoreAdapter(CommerceProvider):
     """In-memory demo store. Runs the whole agent with no platform connected."""
 
     platform_name = "mock"
+
+    #: Abandoned carts for the recovery feature. Adapters with real carts
+    #: expose this the same way so analytics reads one source of truth.
+    abandoned_carts = mock_abandoned_carts
 
     def _order_from_dict(self, o: dict) -> Order:
         return Order(

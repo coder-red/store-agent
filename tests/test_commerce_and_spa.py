@@ -171,3 +171,12 @@ def test_all_orders_endpoint_is_gone(client):
     r = client.get("/store/orders")
     assert "application/json" not in r.headers.get("content-type", "")
     assert "orders" not in r.text[:200] or "<html" in r.text.lower()
+
+
+def test_analytics_reports_real_order_revenue(client):
+    r = client.get("/api/analytics")
+    assert r.status_code == 200
+    body = r.json()
+    assert "orders" in body
+    assert body["orders"]["total_orders"] > 0
+    assert body["orders"]["total_revenue"].startswith("$")

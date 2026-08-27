@@ -51,6 +51,7 @@ class ShopifyAdapter(CommerceProvider):
         return Product(
             id=p["id"], title=p["title"], body_html=p.get("body_html", ""),
             vendor=p.get("vendor", ""),
+            image=(p.get("image") or {}).get("src", ""),
             variants=[Variant(**{
                 "id": v["id"], "title": v["title"], "price": v["price"],
                 "inventory_quantity": v["inventory_quantity"], "sku": v.get("sku", ""),

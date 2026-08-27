@@ -52,6 +52,7 @@ class Product:
     body_html: str
     vendor: str
     variants: list[Variant]
+    image: str = ""                # URL or path to the product's primary image
 
 
 class CommerceProvider(ABC):

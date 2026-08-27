@@ -29,6 +29,14 @@ with sync_playwright() as p:
             page.goto(url, wait_until="networkidle", timeout=30000)
             time.sleep(2)
             page.screenshot(path=str(ASSETS / f"{name}.png"), full_page=False)
+            if name == "storefront":
+                try:
+                    page.click(".product-card")
+                    time.sleep(1.5)
+                    page.screenshot(path=str(ASSETS / "storefront-product.png"), full_page=False)
+                    print("  saved storefront-product.png")
+                except Exception as e:
+                    print(f"  product modal FAILED: {e}")
             print(f"  saved {name}.png")
         except Exception as e:
             print(f"  FAILED: {e}")

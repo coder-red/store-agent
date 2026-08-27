@@ -34,7 +34,7 @@ class MockStoreAdapter(CommerceProvider):
     def _product_from_dict(self, p: dict) -> Product:
         return Product(
             id=p["id"], title=p["title"], body_html=p["body_html"],
-            vendor=p["vendor"],
+            vendor=p["vendor"], image=p.get("image", ""),
             variants=[Variant(**v) for v in p["variants"]],
         )
 

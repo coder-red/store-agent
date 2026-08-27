@@ -5,6 +5,7 @@ from typing import Optional
 from app.agents.multi_agent import run_agent_sync
 from app.agents.sentiment import analyze_sentiment
 from app.db.supabase import get_conversation, save_conversation, get_all_conversations, get_all_escalations
+from app.db.channel_config import load_channel_config, save_channel_config
 from app.channels.manager import channel_manager
 from app.commerce.service import get_store_provider, reset_provider
 from app.config import settings
@@ -34,6 +35,19 @@ class DescriptionRequest(BaseModel):
     category: str
     features: str
     audience: str = "online shoppers"
+
+
+class ChannelConfig(BaseModel):
+    channel: str = "webchat"
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_whatsapp_number: str = "whatsapp:+14155238886"
+    owner_whatsapp_number: str = ""
+    telegram_bot_token: str = ""
+    owner_telegram_chat_id: str = ""
+    resend_api_key: str = ""
+    support_email: str = ""
+    owner_email: str = ""
 
 
 # In-memory email store (for demo, supersedes supabase)
@@ -244,6 +258,27 @@ async def update_settings(config: DemoConfig):
         settings.return_window_days = config.return_window_days
     reset_provider()
     return {"status": "updated", "demo_mode": settings.demo_mode}
+
+
+@router.get("/api/channels")
+async def get_channels():
+    return load_channel_config()
+
+
+@router.put("/api/channels")
+async def update_channels(config: ChannelConfig):
+    saved = save_channel_config(config.model_dump())
+    settings.channel = saved["channel"]
+    settings.twilio_account_sid = saved["twilio_account_sid"] or None
+    settings.twilio_auth_token = saved["twilio_auth_token"] or None
+    settings.twilio_whatsapp_number = saved["twilio_whatsapp_number"] or None
+    settings.owner_whatsapp_number = saved["owner_whatsapp_number"] or None
+    settings.telegram_bot_token = saved["telegram_bot_token"] or None
+    settings.owner_telegram_chat_id = saved["owner_telegram_chat_id"] or None
+    settings.resend_api_key = saved["resend_api_key"] or None
+    settings.support_email = saved["support_email"] or None
+    settings.owner_email = saved["owner_email"] or None
+    return {"status": "updated", "channel": saved["channel"]}
 
 
 @router.get("/api/products")

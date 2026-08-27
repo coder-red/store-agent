@@ -44,5 +44,17 @@ class Settings(BaseSettings):
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
+    def apply_stored_channel_config(self, config: dict):
+        self.channel = config.get("channel", "webchat")
+        self.twilio_account_sid = config.get("twilio_account_sid") or None
+        self.twilio_auth_token = config.get("twilio_auth_token") or None
+        self.twilio_whatsapp_number = config.get("twilio_whatsapp_number") or None
+        self.owner_whatsapp_number = config.get("owner_whatsapp_number") or None
+        self.telegram_bot_token = config.get("telegram_bot_token") or None
+        self.owner_telegram_chat_id = config.get("owner_telegram_chat_id") or None
+        self.resend_api_key = config.get("resend_api_key") or None
+        self.support_email = config.get("support_email") or None
+        self.owner_email = config.get("owner_email") or None
+
 
 settings = Settings()

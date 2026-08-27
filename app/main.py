@@ -7,6 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.api.routes import router
 from app.api.store_routes import router as store_router
 from app.config import settings
+from app.db.channel_config import load_channel_config
 from app.inventory_alert import check_inventory_and_alert
 
 scheduler = AsyncIOScheduler()
@@ -14,6 +15,8 @@ scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    stored = load_channel_config()
+    settings.apply_stored_channel_config(stored)
     print(f"Starting {settings.store_name} support agent")
     print(f"  Platform: {settings.resolved_platform}")
     print(f"  Demo mode: {settings.demo_mode}")

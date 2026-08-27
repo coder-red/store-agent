@@ -24,7 +24,7 @@
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-20232a?logo=react&logoColor=61DAFB" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white" alt="Supabase">
+  <img src="https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white" alt="SQLite">
   <img src="https://img.shields.io/badge/Twilio%20WhatsApp-F22F46?logo=twilio&logoColor=white" alt="Twilio">
   <img src="https://img.shields.io/badge/Telegram-26A5E4?logo=telegram&logoColor=white" alt="Telegram">
   <img src="https://img.shields.io/badge/Groq-F55036?logo=groq&logoColor=white" alt="Groq">
@@ -64,7 +64,7 @@
 
 [![Dashboard][dashboard-screenshot]](https://store-agent-app.onrender.com)
 
-Solo founders answer the same five questions all day — where is my order, can I return this, do you have it in blue, what is your policy, I need a human — usually across three apps. Hiring support is not an option at that stage; ignoring it costs sales.
+Solo founders answer the same five questions all day - where is my order, can I return this, do you have it in blue, what is your policy, I need a human - usually across three apps. Hiring support is not an option at that stage; ignoring it costs sales.
 
 Store Agent answers the repetitive 80% from real store data, hands the rest to the owner with context, and shows the founder what customers are actually asking. It runs across web chat, WhatsApp, Telegram and email. One agent, any channel.
 
@@ -124,14 +124,14 @@ Switch channels by setting `CHANNEL` to `webchat`, `whatsapp`, `telegram` or `em
 
 ## Features
 
-- Answers from store data — six tools for orders, fulfillment, returns, products, policies and escalation
-- Escalates instead of guessing — uncertain questions route to the owner with full context
-- Multi-channel — web chat, WhatsApp, Telegram, email, one agent, same tools
-- Pluggable storefronts — `CommerceProvider` interface with seven methods, swap Shopify for any platform
-- Owner dashboard — conversations, analytics, orders, email inbox, cart recovery, product descriptions, settings
-- Sentiment tagging — every message tagged as positive, neutral or negative
-- Cart recovery — drafts personalised win-back messages for abandoned carts
-- Demo mode — `PLATFORM=mock` runs with sample data, no store connected
+- Answers from store data - six tools for orders, fulfillment, returns, products, policies and escalation
+- Escalates instead of guessing - uncertain questions route to the owner with full context
+- Multi-channel - web chat, WhatsApp, Telegram, email, one agent, same tools
+- Pluggable storefronts - `CommerceProvider` interface with seven methods, swap Shopify for any platform
+- Owner dashboard - conversations, analytics, orders, email inbox, cart recovery, product descriptions, settings
+- Sentiment tagging - every message tagged as positive, neutral or negative
+- Cart recovery - drafts personalised win-back messages for abandoned carts
+- Demo mode - `PLATFORM=mock` runs with sample data, no store connected
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -161,8 +161,8 @@ Switch channels by setting `CHANNEL` to `webchat`, `whatsapp`, `telegram` or `em
                                    │  mock (demo) │ shopify │ yours     │
                                    └────────────────────────────────────┘
                                                       ▼
-                                          Supabase (conversations, escalations)
-                                          Dashboard (React) ◄── WebSocket events
+                                           SQLite (conversations, escalations)
+                                           Dashboard (React) ◄── WebSocket events
 ```
 
 Requests go through a supervisor then specialist layout: a routing call picks orders, returns, products or general, each specialist is a ReAct agent with only the tools it needs, and the dashboard shows which specialist answered. A single-agent variant with the full toolset is kept for comparison.
@@ -182,7 +182,7 @@ Requests go through a supervisor then specialist layout: a routing call picks or
 
 ## Adding a Storefront Platform
 
-Subclass `CommerceProvider` and implement seven async methods:
+Subclass `CommerceProvider` and implement the seven required async methods:
 
 ```python
 from app.commerce.base import CommerceProvider
@@ -192,6 +192,8 @@ class MyPlatformAdapter(CommerceProvider):
     # get_order_by_number, get_order_by_email, search_products,
     # get_fulfillments, get_all_products, get_all_orders, check_inventory
 ```
+
+Three optional methods default to a safe no-op so every store works out of the box: `get_order` looks up a single order, and the cart recovery trio (`get_abandoned_carts`, `attempt_cart_recovery`, `mark_cart_recovered`) reads and updates abandoned carts. Override them when your platform supports cart recovery.
 
 Then set:
 
@@ -211,10 +213,10 @@ Built-ins: `PLATFORM=mock` (demo store), `PLATFORM=shopify` (uses `SHOPIFY_*` cr
 | `POST /webhook/email` | Inbound email webhook |
 | `WS /ws/chat` | Streaming web chat and dashboard live events |
 | `GET /api/conversations`, `/api/conversations/{id}` | Transcripts |
-| `GET /api/orders` | Owner order ledger |
+| `GET /api/orders`, `GET /api/orders/{id}` | Owner order ledger and per-order detail with line items |
 | `GET /api/escalations`, `/api/analytics` | Owner views |
 | `POST /api/generate-descriptions` | Product-description generator |
-| `GET /store/carts/abandoned`, `POST /store/carts/{id}/recover` | Cart recovery |
+| `GET /store/carts/abandoned`, `POST /store/carts/{id}/recover`, `POST /store/carts/auto-recover` | Cart recovery |
 | `GET /store/track` | Customer order lookup |
 | `GET /health` | Mode, platform, channel, model |
 
@@ -234,9 +236,10 @@ Built-ins: `PLATFORM=mock` (demo store), `PLATFORM=shopify` (uses `SHOPIFY_*` cr
 - [x] Cart recovery agent
 - [x] Product description generator
 - [x] Demo mode with mock data
+- [x] Order detail view from the orders ledger
+- [x] Cart recovery through `CommerceProvider`
 - [ ] Per-tenant isolation
 - [ ] Platform return rules integration
-- [ ] Cart recovery through `CommerceProvider`
 
 See the [open issues](https://github.com/coder-red/store-agent/issues) for a full list of proposed features and known issues.
 
@@ -262,7 +265,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-**Mohammed Ahmed Babatunde** — AI engineer, Lagos
+**Mohammed Ahmed Babatunde** - AI engineer, Lagos
 
 [github.com/coder-red](https://github.com/coder-red) · [linkedin.com/in/coder-red](https://linkedin.com/in/coder-red) · mohammed.ds.ml01@gmail.com
 
@@ -272,13 +275,14 @@ Project Link: [https://github.com/coder-red/store-agent](https://github.com/code
 
 ## Acknowledgments
 
-* [LangChain](https://github.com/langchain-ai) — LangGraph agent framework
-* [Groq](https://groq.com) — fast inference
-* [FastAPI](https://fastapi.tiangolo.com) — backend framework
-* [React](https://react.dev) — dashboard UI
-* [Supabase](https://supabase.com) — data storage
-* [shields.io](https://shields.io) — badges
-* [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) — README structure
+* [LangChain](https://github.com/langchain-ai) - LangGraph agent framework
+* [Groq](https://groq.com) - fast inference
+* [FastAPI](https://fastapi.tiangolo.com) - backend framework
+* [React](https://react.dev) - dashboard UI
+* [SQLite](https://sqlite.org) - default data storage, zero setup
+* [Supabase](https://supabase.com) - optional hosted storage backend
+* [shields.io](https://shields.io) - badges
+* [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template) - README structure
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

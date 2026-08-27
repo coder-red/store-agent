@@ -303,7 +303,7 @@ async def update_channels(config: ChannelConfig):
 async def list_products():
     provider = get_store_provider()
     products = await provider.get_all_products()
-    return {"products": [{"id": p.id, "title": p.title, "vendor": p.vendor, "image": p.image, "variants": [{"title": v.title, "price": v.price, "stock": v.inventory_quantity, "sku": v.sku} for v in p.variants]} for p in products]}
+    return {"products": [{"id": p.id, "title": p.title, "vendor": p.vendor, "image": p.image, "image_fallback": p.image_fallback, "variants": [{"title": v.title, "price": v.price, "stock": v.inventory_quantity, "sku": v.sku} for v in p.variants]} for p in products]}
 
 
 @router.get("/api/orders")

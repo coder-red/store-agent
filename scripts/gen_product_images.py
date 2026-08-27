@@ -36,6 +36,38 @@ SPECS = {
 
 SIZE = (400, 300)
 
+# Real stock-photo source (Unsplash) for each mock product, so the demo store
+# shows genuine photography by default. If a URL ever fails to load, the
+# storefront swaps to the local SVG tile via `image_fallback`.
+IMG_PHOTO = {
+    1001: "1601987078664-863b07dc0907",
+    1002: "1614860243518-c12eb2fdf66c",
+    1003: "1604074273911-6030c1fee7f6",
+    1004: "1682827923239-9517e6d445a5",
+    1005: "1590140103794-ce43de8e44c8",
+    1006: "1767605523281-8b54b3692078",
+    1007: "1725730929864-31959a4f1e50",
+    1008: "1758398332796-514bcc9a1029",
+    1009: "1692351014024-97edd83a7b5a",
+    1010: "1676282827704-db50057ad7f5",
+    1011: "1637437757614-6491c8e915b5",
+    1012: "1641266886437-28abcc2b3288",
+    1013: "1773739685635-76be879b058f",
+    1014: "1741417657684-1fa606afd701",
+    1015: "1658863173663-607c0feef366",
+    1016: "1584744982491-665216d95f8b",
+    1017: "1544967919-44c1ef2f9e7a",
+    1018: "1770493895453-4f758c40d11d",
+    1019: "1753369232904-a8a888319d28",
+    1020: "1622823251669-9da2507aa52d",
+    1021: "1770672438590-413eae05e595",
+    1022: "1621960144410-36da870e29b6",
+}
+
+
+def img_url(pid):
+    return f"https://images.unsplash.com/photo-{IMG_PHOTO[pid]}?w=700&q=70&auto=format&fit=crop"
+
 
 def build_svg(slug, colors, icon):
     c1, c2 = colors
@@ -71,22 +103,38 @@ def main():
         path.write_text(build_svg(slug, colors, icon), encoding="utf-8")
         written.append(slug)
 
-    # Inject image path into each mock product dict in demo_data.py.
-    # Insert "image": "/images/<slug>.svg", right before the "variants" key
-    # so the key order stays clean: id, title, body_html, vendor, image, variants.
+    # Inject image fields into each mock product dict in demo_data.py.
+    # `image` is the real stock-photo URL (Unsplash), `image_fallback` is the
+    # local SVG tile the storefront swaps to if the remote image fails to load.
+    # Keys stay ordered: id, title, body_html, vendor, image, image_fallback, variants.
     text = DEMO.read_text(encoding="utf-8")
     for pid, (slug, colors, icon) in SPECS.items():
         marker = f'"id": {pid}, '
-        img_key = f'"image": "/images/{slug}.svg"'
         idx = text.find(marker)
         assert idx != -1, f"product {pid} not found"
         variants_at = text.find('"variants"', idx)
         assert variants_at != -1, f"variants missing for product {pid}"
-        seg_before = text[idx:variants_at]
-        if '"image"' in seg_before:
-            continue  # already injected
-        # insert right before "variants" (after the preceding ", ")
-        text = text[:variants_at] + img_key + ", " + text[variants_at:]
+        seg = text[idx:variants_at]
+
+        new_seg = re.sub(
+            r'"image":\s*"[^"]*"',
+            f'"image": "{img_url(pid)}"',
+            seg,
+        )
+        new_seg = re.sub(
+            r'"image_fallback":\s*"[^"]*"',
+            f'"image_fallback": "/images/{slug}.svg"',
+            new_seg,
+        )
+        if '"image_fallback"' not in new_seg:
+            new_seg = re.sub(
+                r'("image":\s*"[^"]*")',
+                rf'\1, "image_fallback": "/images/{slug}.svg"',
+                new_seg,
+                count=1,
+            )
+
+        text = text[:idx] + new_seg + text[variants_at:]
 
     DEMO.write_text(text, encoding="utf-8")
     print(f"Wrote {len(written)} SVGs to {IMG_DIR}")

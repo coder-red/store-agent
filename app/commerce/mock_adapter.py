@@ -35,6 +35,7 @@ class MockStoreAdapter(CommerceProvider):
         return Product(
             id=p["id"], title=p["title"], body_html=p["body_html"],
             vendor=p["vendor"], image=p.get("image", ""),
+            image_fallback=p.get("image_fallback", ""),
             variants=[Variant(**v) for v in p["variants"]],
         )
 

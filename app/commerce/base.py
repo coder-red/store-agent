@@ -53,6 +53,7 @@ class Product:
     vendor: str
     variants: list[Variant]
     image: str = ""                # URL or path to the product's primary image
+    image_fallback: str = ""       # secondary image used if the primary fails to load
 
 
 class CommerceProvider(ABC):

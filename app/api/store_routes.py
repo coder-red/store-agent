@@ -92,6 +92,7 @@ async def store_products():
             "description": p.body_html,
             "vendor": p.vendor,
             "image": p.image,
+            "image_fallback": p.image_fallback,
             "variants": [
                 {"id": v.id, "title": v.title, "price": v.price, "stock": v.inventory_quantity, "sku": v.sku}
                 for v in p.variants

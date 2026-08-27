@@ -233,7 +233,7 @@ function renderProducts() {
     const stock = p.variants.reduce((s, v) => s + v.stock, 0);
     const sClass = stock === 0 ? 'out' : stock <= 5 ? 'low' : 'available';
     const sText = stock === 0 ? 'Out of stock' : stock <= 5 ? `Only ${stock} left` : `In stock`;
-    return `<div class="product-card" onclick="openProduct(${p.id})"><div class="product-img">${p.image ? `<img src="${p.image}" alt="${p.title}" loading="lazy">` : p.title}</div><div class="product-body"><h3>${p.title}</h3><div class="vendor">by ${p.vendor}</div><div class="price">$${Math.min(...prices)}${Math.max(...prices) > Math.min(...prices) ? ' – $' + Math.max(...prices) : ''}</div><div class="stock ${sClass}">${sText}</div></div></div>`;
+    return `<div class="product-card" onclick="openProduct(${p.id})"><div class="product-img">${p.image ? `<img src="${p.image}" data-fallback="${p.image_fallback || ''}" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback;}" alt="${p.title}" loading="lazy">` : p.title}</div><div class="product-body"><h3>${p.title}</h3><div class="vendor">by ${p.vendor}</div><div class="price">$${Math.min(...prices)}${Math.max(...prices) > Math.min(...prices) ? ' – $' + Math.max(...prices) : ''}</div><div class="stock ${sClass}">${sText}</div></div></div>`;
   }).join('');
 }
 let currentProduct = null;
@@ -244,8 +244,8 @@ function openProduct(id) {
   document.getElementById('modal-vendor').textContent = 'by ' + currentProduct.vendor;
   document.getElementById('modal-desc').textContent = currentProduct.description;
   const modalImg = document.getElementById('modal-img');
-  if (currentProduct.image) { modalImg.src = currentProduct.image; modalImg.classList.remove('hidden'); }
-  else { modalImg.removeAttribute('src'); modalImg.classList.add('hidden'); }
+  if (currentProduct.image) { modalImg.src = currentProduct.image; modalImg.dataset.fallback = currentProduct.image_fallback || ''; modalImg.onerror = function(){ if(this.dataset.fallback){ this.onerror=null; this.src=this.dataset.fallback; } }; modalImg.classList.remove('hidden'); }
+  else { modalImg.removeAttribute('src'); modalImg.dataset.fallback = ''; modalImg.onerror = null; modalImg.classList.add('hidden'); }
   document.getElementById('variant-select').innerHTML = currentProduct.variants.map(v => `<option value='${JSON.stringify(v)}'>${v.title} - $${v.price} (${v.stock > 0 ? v.stock + ' in stock' : 'out of stock'})</option>`).join('');
   document.getElementById('order-confirm').className = 'order-confirm';
   document.getElementById('order-confirm').textContent = '';

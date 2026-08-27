@@ -113,6 +113,18 @@ def test_api_orders_includes_owner_fields(client):
         assert field in o
 
 
+def test_whatsapp_webhook_returns_twill(client):
+    r = client.post("/webhook/whatsapp", data={"From": "whatsapp:+1234", "Body": "hi"})
+    assert r.status_code == 200
+    assert "Response" in r.text
+
+
+def test_telegram_webhook_ok(client):
+    r = client.post("/webhook/telegram", json={"message": {"chat": {"id": "99"}, "text": "hello"}})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+
+
 # --- Customer order tracking (privacy: only your own order) ---
 
 def _place_order(client, email="track.me@example.com"):

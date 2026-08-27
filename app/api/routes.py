@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from typing import Optional
 from app.agents.multi_agent import run_agent_sync
@@ -75,6 +76,33 @@ async def email_webhook(email: EmailMessage):
         "channel": "email",
     })
     return {"response": response, "customer_identifier": cid}
+
+
+@router.post("/webhook/whatsapp")
+async def whatsapp_webhook(request: Request):
+    form = await request.form()
+    from_number = form.get("From", "")
+    body = form.get("Body", "")
+    if not body or not from_number:
+        return PlainTextResponse("<Response></Response>", media_type="application/xml")
+    cid = f"whatsapp:{from_number}"
+    response = await _process_message(body, cid)
+    await channel_manager.send_message(from_number, response)
+    return PlainTextResponse("<Response></Response>", media_type="application/xml")
+
+
+@router.post("/webhook/telegram")
+async def telegram_webhook(request: Request):
+    data = await request.json()
+    message = data.get("message", {})
+    chat_id = str(message.get("chat", {}).get("id", ""))
+    text = message.get("text", "")
+    if not text or not chat_id:
+        return {"ok": True}
+    cid = f"telegram:{chat_id}"
+    response = await _process_message(text, cid)
+    await channel_manager.send_message(chat_id, response)
+    return {"ok": True}
 
 
 @router.get("/api/emails")

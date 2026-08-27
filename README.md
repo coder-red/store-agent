@@ -64,9 +64,9 @@
 
 [![Dashboard][dashboard-screenshot]](https://store-agent-app.onrender.com)
 
-Solo founders answer the same five questions all day — *where's my order, can I return this, do you have it in blue, what's your policy, I need a human* — usually across three apps. Hiring support isn't an option at that stage; ignoring it costs sales.
+Solo founders answer the same five questions all day — where is my order, can I return this, do you have it in blue, what is your policy, I need a human — usually across three apps. Hiring support is not an option at that stage; ignoring it costs sales.
 
-Store Agent answers the repetitive 80% from real store data, hands the rest to the owner with context, and shows the founder what customers are actually asking. It runs across web chat, WhatsApp, Telegram and email — one agent, any channel.
+Store Agent answers the repetitive 80% from real store data, hands the rest to the owner with context, and shows the founder what customers are actually asking. It runs across web chat, WhatsApp, Telegram and email. One agent, any channel.
 
 The storefront is a plugin. Shopify ships as the reference adapter; WooCommerce, Medusa or your custom backend is one subclass away.
 
@@ -93,7 +93,6 @@ The storefront is a plugin. Shopify ships as the reference adapter; WooCommerce,
 3. Set up your environment
    ```sh
    cp .env.example .env
-   # Edit .env — set GROQ_API_KEY and PLATFORM=mock to start
    ```
 4. Start the backend
    ```sh
@@ -103,13 +102,13 @@ The storefront is a plugin. Shopify ships as the reference adapter; WooCommerce,
    ```sh
    cd frontend && npm install && npm run dev
    ```
-6. Open http://localhost:5173
+6. Open the dashboard in your browser
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
 
-Try it without the UI:
+Send a test message:
 
 ```sh
 curl -X POST localhost:8000/webhook/test \
@@ -117,38 +116,22 @@ curl -X POST localhost:8000/webhook/test \
   -d '{"customer_identifier":"demo","message":"Where is my order #1006?"}'
 ```
 
-Connect a real Shopify store:
+Connect a real Shopify store by setting `PLATFORM=shopify` and adding your store credentials. See [`.env.example`](.env.example) for the full list of environment variables.
 
-```sh
-PLATFORM=shopify
-SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
-SHOPIFY_API_KEY=your_key
-SHOPIFY_API_SECRET=your_secret
-```
-
-Channels — set `CHANNEL` to switch:
-
-| Channel | Environment variables |
-|---|---|
-| Web chat | `CHANNEL=webchat` (default) |
-| WhatsApp | `CHANNEL=whatsapp`, `TWILIO_*` |
-| Telegram | `CHANNEL=telegram`, `TELEGRAM_BOT_TOKEN`, `OWNER_TELEGRAM_CHAT_ID` |
-| Email | `CHANNEL=email`, `RESEND_API_KEY`, `SUPPORT_EMAIL` |
-
-See [`.env.example`](.env.example) for the full list.
+Switch channels by setting `CHANNEL` to `webchat`, `whatsapp`, `telegram` or `email`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Features
 
-- **Answers from store data** — six tools: order status, fulfillment, return eligibility, product info, store policies, escalate to human
-- **Escalates instead of guessing** — uncertain or out-of-scope questions route to the owner with full context
-- **Multi-channel** — web chat, WhatsApp, Telegram, email — one agent, same tools
-- **Pluggable storefronts** — `CommerceProvider` interface with seven methods; swap Shopify for any platform via one env var
-- **Owner dashboard** — conversations, analytics, orders, email inbox, cart recovery, product descriptions, settings
-- **Sentiment tagging** — every message tagged as positive, neutral or negative
-- **Cart recovery** — drafts personalised win-back messages for abandoned carts
-- **Demo mode** — `PLATFORM=mock` runs with sample data, no store connected
+- Answers from store data — six tools for orders, fulfillment, returns, products, policies and escalation
+- Escalates instead of guessing — uncertain questions route to the owner with full context
+- Multi-channel — web chat, WhatsApp, Telegram, email, one agent, same tools
+- Pluggable storefronts — `CommerceProvider` interface with seven methods, swap Shopify for any platform
+- Owner dashboard — conversations, analytics, orders, email inbox, cart recovery, product descriptions, settings
+- Sentiment tagging — every message tagged as positive, neutral or negative
+- Cart recovery — drafts personalised win-back messages for abandoned carts
+- Demo mode — `PLATFORM=mock` runs with sample data, no store connected
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -182,18 +165,18 @@ See [`.env.example`](.env.example) for the full list.
                                           Dashboard (React) ◄── WebSocket events
 ```
 
-Requests go through a supervisor → specialist layout: a routing call picks `orders / returns / products / general`, each specialist is a ReAct agent with only the tools it needs, and the dashboard shows which specialist answered. A single-agent variant with the full toolset is kept for comparison.
+Requests go through a supervisor then specialist layout: a routing call picks orders, returns, products or general, each specialist is a ReAct agent with only the tools it needs, and the dashboard shows which specialist answered. A single-agent variant with the full toolset is kept for comparison.
 
 ### Design decisions
 
 | Decision | Why |
 |---|---|
-| Tools call the store; the model never invents order data | Every order/product answer is a tool result. The system prompt forbids answering from memory. |
+| Tools call the store, the model never invents order data | Every order or product answer is a tool result. The system prompt forbids answering from memory. |
 | `escalate_to_human` is a tool, not an error path | The model decides to escalate like any other action, so it can include a reason and a summary. |
-| The storefront is a plugin, not a feature | `CommerceProvider` is a seven-method contract returning platform-neutral dataclasses. The core doesn't know Shopify exists. |
-| Channel adapters over a shared base | `channels/base.py` defines `send_message` / `send_to_owner`; each channel implements it. Adding a channel is one file. |
+| The storefront is a plugin, not a feature | `CommerceProvider` is a seven-method contract returning platform-neutral dataclasses. The core does not know Shopify exists. |
+| Channel adapters over a shared base | `channels/base.py` defines `send_message` and `send_to_owner`; each channel implements it. Adding a channel is one file. |
 | Streaming everywhere | The agent streams events; web chat gets tokens over WebSocket, and the dashboard subscribes to the same stream. |
-| Groq for inference | Sub-second first token; the LLM provider/model are env-configurable. |
+| Groq for inference | Sub-second first token; the LLM provider and model are env-configurable. |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -226,7 +209,7 @@ Built-ins: `PLATFORM=mock` (demo store), `PLATFORM=shopify` (uses `SHOPIFY_*` cr
 |---|---|
 | `POST /webhook/test` | Send a message as a customer, get the agent's reply |
 | `POST /webhook/email` | Inbound email webhook |
-| `WS /ws/chat` | Streaming web chat + dashboard live events |
+| `WS /ws/chat` | Streaming web chat and dashboard live events |
 | `GET /api/conversations`, `/api/conversations/{id}` | Transcripts |
 | `GET /api/orders` | Owner order ledger |
 | `GET /api/escalations`, `/api/analytics` | Owner views |
@@ -239,7 +222,7 @@ Built-ins: `PLATFORM=mock` (demo store), `PLATFORM=shopify` (uses `SHOPIFY_*` cr
 
 ## Deployment
 
-`render.yaml` deploys the API (free tier). The dashboard builds to static files for Vercel; `frontend/vercel.json` rewrites `/api`, `/ws`, `/webhook` to the backend URL.
+`render.yaml` deploys the API. The dashboard builds to static files for Vercel; `frontend/vercel.json` rewrites API, WebSocket and webhook routes to the backend URL.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

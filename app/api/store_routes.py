@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from app.commerce.service import get_store_provider
-from app.commerce.demo_data import mock_products, mock_orders, mock_abandoned_carts
+from app.commerce.demo_data import mock_products, mock_orders
 from app.agents.cart_recovery import CartRecoveryAgent
 
 router = APIRouter()
@@ -29,43 +29,47 @@ recovery_agent = CartRecoveryAgent()
 
 @router.get("/store/carts/abandoned")
 async def list_abandoned_carts():
-    return {"carts": sorted(mock_abandoned_carts, key=lambda c: c["abandoned_at"], reverse=True)}
+    provider = get_store_provider()
+    carts = await provider.get_abandoned_carts()
+    return {"carts": sorted(carts, key=lambda c: c.get("abandoned_at", ""), reverse=True)}
 
 
 @router.post("/store/carts/{cart_id}/recover")
 async def attempt_recovery(cart_id: int):
-    cart = next((c for c in mock_abandoned_carts if c["id"] == cart_id), None)
+    provider = get_store_provider()
+    carts = await provider.get_abandoned_carts()
+    cart = next((c for c in carts if c["id"] == cart_id), None)
     if not cart:
         raise HTTPException(404, "Cart not found")
     if cart["recovery_status"] == "recovered":
         return {"message": "Cart was already recovered."}
     msg = await recovery_agent.generate_recovery_message(cart)
-    cart["recovery_attempts"] += 1
-    cart["last_recovery_at"] = datetime.now(timezone.utc).isoformat()
-    cart["recovery_status"] = "sent" if cart["recovery_attempts"] < 3 else "pending"
-    return {"recovery_message": msg, "cart": cart}
+    updated = await provider.attempt_cart_recovery(cart_id, msg)
+    return {"recovery_message": msg, "cart": updated or cart}
 
 
 @router.post("/store/carts/auto-recover")
 async def auto_recover():
+    provider = get_store_provider()
+    carts = await provider.get_abandoned_carts()
     sent = []
-    for cart in mock_abandoned_carts:
+    for cart in carts:
         if cart["recovery_status"] != "recovered":
             msg = await recovery_agent.generate_recovery_message(cart)
-            cart["recovery_attempts"] += 1
-            cart["last_recovery_at"] = datetime.now(timezone.utc).isoformat()
-            cart["recovery_status"] = "sent"
+            await provider.attempt_cart_recovery(cart["id"], msg)
             sent.append({"cart_id": cart["id"], "customer": cart["customer_name"], "message": msg})
     return {"recovered": len(sent), "messages": sent}
 
 
 @router.get("/store/carts/recovery-stats")
 async def recovery_stats():
-    total = len(mock_abandoned_carts)
-    recovered = sum(1 for c in mock_abandoned_carts if c["recovery_status"] == "recovered")
-    sent = sum(1 for c in mock_abandoned_carts if c["recovery_status"] == "sent")
-    pending = sum(1 for c in mock_abandoned_carts if c["recovery_status"] == "pending")
-    total_revenue = sum(float(c["total"]) for c in mock_abandoned_carts if c["recovery_status"] == "recovered")
+    provider = get_store_provider()
+    carts = await provider.get_abandoned_carts()
+    total = len(carts)
+    recovered = sum(1 for c in carts if c["recovery_status"] == "recovered")
+    sent = sum(1 for c in carts if c["recovery_status"] == "sent")
+    pending = sum(1 for c in carts if c["recovery_status"] == "pending")
+    total_revenue = sum(float(c["total"]) for c in carts if c["recovery_status"] == "recovered")
     return {
         "total_carts": total,
         "recovered": recovered,
@@ -73,7 +77,7 @@ async def recovery_stats():
         "pending": pending,
         "recovery_rate": round(recovered / total * 100, 1) if total > 0 else 0,
         "recovered_revenue": f"${total_revenue:.2f}",
-        "potential_revenue": f"${sum(float(c['total']) for c in mock_abandoned_carts):.2f}",
+        "potential_revenue": f"${sum(float(c['total']) for c in carts):.2f}",
     }
 
 

@@ -202,13 +202,9 @@ async def get_analytics():
     fulfilled = sum(1 for o in orders if o.fulfillment_status == "fulfilled")
     pending = sum(1 for o in orders if o.financial_status == "pending")
 
-    # Cart recovery. Uses the provider's abandoned carts when available,
-    # falling back to the demo carts in mock mode.
-    from app.commerce.demo_data import mock_abandoned_carts
-    carts = mock_abandoned_carts
-    provider_carts = getattr(provider, "abandoned_carts", None)
-    if provider_carts is not None:
-        carts = provider_carts
+    # Cart recovery. Uses the provider's abandoned carts through the
+    # CommerceProvider contract so it works for real stores too.
+    carts = await provider.get_abandoned_carts()
     total_carts = len(carts)
     recovered_carts = sum(1 for c in carts if c.get("recovery_status") == "recovered")
     recovered_revenue = sum(float(c["total"]) for c in carts if c.get("recovery_status") == "recovered")
@@ -328,6 +324,29 @@ async def list_orders():
         "tracking_number": o.tracking_number,
         "tracking_url": o.tracking_url,
     } for o in orders]}
+
+
+@router.get("/api/orders/{order_id}")
+async def get_order(order_id: int):
+    provider = get_store_provider()
+    order = await provider.get_order(order_id)
+    if not order:
+        raise HTTPException(404, "Order not found")
+    return {
+        "id": order.id,
+        "order_number": order.order_number,
+        "customer_name": order.customer_name,
+        "customer_email": order.customer_email,
+        "total": order.total_price,
+        "currency": order.currency,
+        "status": order.financial_status,
+        "fulfillment": order.fulfillment_status,
+        "created_at": order.created_at,
+        "tracking_company": order.tracking_company,
+        "tracking_number": order.tracking_number,
+        "tracking_url": order.tracking_url,
+        "line_items": order.line_items or [],
+    }
 
 
 connected_websockets: set[WebSocket] = set()

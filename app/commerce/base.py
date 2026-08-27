@@ -33,6 +33,7 @@ class Order:
     tracking_company: str
     tracking_number: str
     tracking_url: str
+    line_items: list = None        # optional list of {title, quantity, price, sku}
 
 
 @dataclass
@@ -84,7 +85,55 @@ class CommerceProvider(ABC):
     async def get_all_orders(self) -> list[Order]:
         """Recent orders, newest first (used by cart recovery and analytics)."""
 
+    async def get_order(self, order_id: int) -> Optional[Order]:
+        """Fetch one order by its internal id. Default scans get_all_orders;
+        real adapters should override with a direct lookup."""
+        for o in await self.get_all_orders():
+            if o.id == order_id:
+                return o
+        return None
+
     @abstractmethod
     async def check_inventory(self) -> list[dict]:
         """Variants at or below the low-stock threshold. Each dict has keys:
         product, variant, stock, sku."""
+
+    # --- Cart recovery (optional; base provides a no-op / in-memory default) ---
+
+    #: Abandoned carts as a list of dicts. Real adapters that support cart
+    #: recovery override this or the methods below. Each cart dict has keys:
+    #: id, customer_name, customer_email, items, total, abandoned_at,
+    #: recovery_status, recovery_attempts.
+    abandoned_carts: list = None
+
+    async def get_abandoned_carts(self) -> list:
+        """Return abandoned carts for the recovery dashboard."""
+        return list(getattr(self, "abandoned_carts", None) or [])
+
+    async def mark_cart_recovered(self, cart_id: int, order_id: int = None) -> None:
+        """Mark a cart as recovered (e.g. after a checkout completes)."""
+        carts = getattr(self, "abandoned_carts", None)
+        if carts is None:
+            return
+        from datetime import datetime, timezone
+        for c in carts:
+            if c["id"] == cart_id:
+                c["recovery_status"] = "recovered"
+                c["recovered_at"] = datetime.now(timezone.utc).isoformat()
+                if order_id:
+                    c["recovered_order_id"] = order_id
+                break
+
+    async def attempt_cart_recovery(self, cart_id: int, message: str) -> dict:
+        """Record a recovery message sent for a cart. Returns the updated cart."""
+        carts = getattr(self, "abandoned_carts", None)
+        if carts is None:
+            return {}
+        from datetime import datetime, timezone
+        for c in carts:
+            if c["id"] == cart_id:
+                c["recovery_attempts"] = c.get("recovery_attempts", 0) + 1
+                c["last_recovery_at"] = datetime.now(timezone.utc).isoformat()
+                c["recovery_status"] = "sent" if c["recovery_attempts"] < 3 else "pending"
+                return c
+        return {}

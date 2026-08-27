@@ -13,6 +13,14 @@ class MockStoreAdapter(CommerceProvider):
     abandoned_carts = mock_abandoned_carts
 
     def _order_from_dict(self, o: dict) -> Order:
+        line_items = o.get("line_items")
+        if not line_items:
+            line_items = [{
+                "title": "Store order",
+                "quantity": 1,
+                "price": o["total_price"],
+                "sku": "",
+            }]
         return Order(
             id=o["id"], order_number=o["order_number"],
             customer_name=o["customer_name"], customer_email=o["customer_email"],
@@ -20,6 +28,7 @@ class MockStoreAdapter(CommerceProvider):
             financial_status=o["financial_status"], fulfillment_status=o["fulfillment_status"],
             created_at=o["created_at"], tracking_company=o["tracking_company"],
             tracking_number=o["tracking_number"], tracking_url=o["tracking_url"],
+            line_items=line_items,
         )
 
     def _product_from_dict(self, p: dict) -> Product:

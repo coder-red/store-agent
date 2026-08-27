@@ -113,6 +113,30 @@ def test_api_orders_includes_owner_fields(client):
         assert field in o
 
 
+def test_api_order_detail_has_line_items(client):
+    orders = client.get("/api/orders").json()["orders"]
+    detail = client.get(f"/api/orders/{orders[0]['id']}")
+    assert detail.status_code == 200
+    d = detail.json()
+    for field in ("customer_email", "customer_name", "total", "line_items", "tracking_url"):
+        assert field in d
+    assert d["line_items"], "order detail should include line items"
+    li = d["line_items"][0]
+    for field in ("title", "quantity", "price", "sku"):
+        assert field in li
+
+    missing = client.get("/api/orders/999999")
+    assert missing.status_code == 404
+
+
+def test_cart_reads_through_provider_contract(client):
+    carts = client.get("/store/carts/abandoned").json()["carts"]
+    assert carts
+    stats = client.get("/store/carts/recovery-stats").json()
+    assert "total_carts" in stats
+    assert stats["total_carts"] == len(carts)
+
+
 def test_whatsapp_webhook_returns_twill(client):
     r = client.post("/webhook/whatsapp", data={"From": "whatsapp:+1234", "Body": "hi"})
     assert r.status_code == 200

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Package, Search, ExternalLink } from 'lucide-react'
 
 interface Order {
@@ -26,6 +27,7 @@ const FUL_COLORS: Record<string, string> = {
 const label = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—')
 
 export default function Orders() {
+  const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [query, setQuery] = useState('')
   const [pay, setPay] = useState('')
@@ -113,7 +115,13 @@ export default function Orders() {
             </thead>
             <tbody>
               {filtered.map(o => (
-                <tr key={o.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <tr key={o.id} onClick={() => navigate(`/orders/${o.id}`)}
+                  style={{
+                    borderBottom: '1px solid var(--color-border)', cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = 'var(--color-surface-light)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = 'transparent' }}>
                   <td style={cellStyle}><b>#{o.order_number}</b></td>
                   <td style={cellStyle}>
                     <div>{o.customer_name || '—'}</div>

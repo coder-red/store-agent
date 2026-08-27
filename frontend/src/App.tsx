@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import Conversations from './pages/Conversations'
 import ConversationDetail from './pages/ConversationDetail'
 import Orders from './pages/Orders'
+import OrdersDetail from './pages/OrdersDetail'
 import Analytics from './pages/Analytics'
 import Email from './pages/Email'
 import CartRecovery from './pages/CartRecovery'
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/conversations" element={<Conversations />} />
           <Route path="/conversations/:id" element={<ConversationDetail />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/:id" element={<OrdersDetail />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/email" element={<Email />} />
           <Route path="/cart-recovery" element={<CartRecovery />} />

@@ -36,6 +36,15 @@ class ShopifyAdapter(CommerceProvider):
             tracking_company=tracking.get("tracking_company", ""),
             tracking_number=tracking.get("tracking_numbers", [""])[0] if tracking.get("tracking_numbers") else "",
             tracking_url=tracking.get("tracking_url", ""),
+            line_items=[
+                {
+                    "title": li.get("title", ""),
+                    "quantity": li.get("quantity", 0),
+                    "price": li.get("price", "0"),
+                    "sku": (li.get("variant", {}) or {}).get("sku", ""),
+                }
+                for li in o.get("line_items", [])
+            ],
         )
 
     def _parse_product(self, p: dict) -> Product:
@@ -78,6 +87,13 @@ class ShopifyAdapter(CommerceProvider):
     async def get_all_orders(self) -> list[Order]:
         data = await self._get_json("/orders.json", {"status": "any", "limit": 50})
         return [self._parse_order(o) for o in data.get("orders", [])]
+
+    async def get_order(self, order_id: int) -> Optional[Order]:
+        try:
+            data = await self._get_json(f"/orders/{order_id}.json")
+            return self._parse_order(data.get("order", {}))
+        except Exception:
+            return None
 
     async def check_inventory(self) -> list[dict]:
         products = await self.get_all_products()

@@ -15,6 +15,7 @@ pages = [
     ("cart-recovery", "/cart-recovery"),
     ("descriptions", "/product-descriptions"),
     ("email-inbox", "/email"),
+    ("order-detail", "/orders/5001"),
 ]
 
 with sync_playwright() as p:
